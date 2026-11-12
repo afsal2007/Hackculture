@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Lora:wght@500;600&display=swap');
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --cream: #f1eee7;
+  --ivory: #f8f7f3;
+  --teal: #478f88;
+  --teal-dark: #34776f;
+  --champagne: #c5ae83;
+  --ink: #343b43;
+  --muted: #7c817e;
+  --border: #e7e2d9;
+  --mint: #eaf3f0;
+  --surface: #ffffff;
+  --surface-hover: #f1eee7;
+  --status-warm: #f7f1e5;
+  --status-warm-text: #927b52;
+  color: var(--ink);
+  background: var(--ivory);
+  font-family: 'DM Sans', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark {
+  --cream: #202b2c;
+  --ivory: #141c1d;
+  --teal: #6bb5aa;
+  --teal-dark: #8bcac0;
+  --champagne: #c5ae83;
+  --ink: #edf2ef;
+  --muted: #a4b1ad;
+  --border: #304142;
+  --mint: #1d3836;
+  --surface: #1b2728;
+  --surface-hover: #263638;
+  --status-warm: #3a3325;
+  --status-warm-text: #ddc38e;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--ivory);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+#root {
+  min-height: 100svh;
+}

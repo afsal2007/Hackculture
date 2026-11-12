@@ -1,0 +1,15 @@
+export const defaultNotificationPreferences = {
+  inApp: true,
+  email: true,
+  researchCompleted: true,
+  researchAttention: true,
+  researchProgress: false,
+  workspaceInvitations: true,
+  memberChanges: true,
+  researchShared: true,
+  collaboration: true,
+  frequency: 'Instant',
+  quietHours: false,
+  quietStart: '22:00',
+  quietEnd: '08:00',
+}
