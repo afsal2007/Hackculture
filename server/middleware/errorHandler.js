@@ -1,3 +1,5 @@
+const config = require('../config');
+
 /**
  * Centralized error handling middleware.
  * Captures and formats operational and system errors uniformly.
@@ -50,7 +52,7 @@ const errorHandler = (err, req, res, next) => {
       message,
       ...(details ? { details } : {})
     },
-    ...(process.env.NODE_ENV === 'development' && statusCode >= 500 && !details && { stack: err.stack }),
+    ...(config.isDevelopment && statusCode >= 500 && !details && { stack: err.stack }),
     timestamp: new Date().toISOString()
   });
 };

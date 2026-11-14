@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
+const config = require('./config');
 const { swaggerSpec } = require('./config/swagger');
 const apiRoutes = require('./routes');
 const notFoundHandler = require('./middleware/notFoundHandler');
@@ -9,16 +10,17 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// HTTP logger
-if (process.env.NODE_ENV !== 'test') {
+// HTTP request logger
+if (!config.isTest) {
   app.use(morgan('dev'));
 }
 
-// CORS configuration
+// CORS configuration using centralized config
 const corsOptions = {
-  origin: process.env.CLIENT_URL || '*',
+  origin: config.clientUrl,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 };
 
 app.use(cors(corsOptions));

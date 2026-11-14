@@ -1,44 +1,93 @@
 const mongoose = require('mongoose');
+const config = require('./index');
+
+let isConnected = false;
+let connectionPromise = null;
+let listenersAttached = false;
+
+/**
+ * Configure lifecycle event listeners for the Mongoose connection.
+ * Attached only once to prevent duplicate event callbacks.
+ */
+function attachConnectionListeners() {
+  if (listenersAttached) return;
+  listenersAttached = true;
+
+  mongoose.connection.on('connected', () => {
+    isConnected = true;
+    console.log(`MongoDB connection established: ${mongoose.connection.host || 'connected'}`);
+  });
+
+  mongoose.connection.on('disconnected', () => {
+    isConnected = false;
+    console.warn('MongoDB disconnected. Attempting to reconnect...');
+  });
+
+  mongoose.connection.on('reconnected', () => {
+    isConnected = true;
+    console.log('MongoDB reconnected successfully.');
+  });
+
+  mongoose.connection.on('error', (err) => {
+    console.error(`MongoDB runtime connection error: ${err.message}`);
+  });
+}
 
 /**
  * Connect to MongoDB using Mongoose.
  *
- * - Reads MONGODB_URI from environment variables (never hardcoded).
- * - Throws if the URI is missing so the calling code can handle it.
- * - Attaches connection event listeners for visibility after initial connect.
+ * - Reads MONGODB_URI from centralized config.
+ * - Prevents duplicate connection attempts by reusing in-flight or established connections.
+ * - Throws on initial connection failure so server startup halts appropriately.
+ *
+ * @returns {Promise<typeof mongoose>}
  */
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI;
-
-  if (!uri) {
-    throw new Error('MONGODB_URI environment variable is not defined.');
+  // If already connected (readyState 1: connected), return existing connection
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
   }
 
-  try {
-    const conn = await mongoose.connect(uri);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  // If connection is in progress (readyState 2: connecting), return active promise
+  if (mongoose.connection.readyState === 2 && connectionPromise) {
+    return connectionPromise;
+  }
 
-    // Log if the connection drops after initial connect
-    mongoose.connection.on('disconnected', () => {
-      console.warn('MongoDB disconnected. Attempting to reconnect...');
-    });
+  attachConnectionListeners();
 
-    // Log when a reconnect succeeds
-    mongoose.connection.on('reconnected', () => {
-      console.log('MongoDB reconnected successfully.');
-    });
+  connectionPromise = (async () => {
+    try {
+      const conn = await mongoose.connect(config.mongodbUri);
+      isConnected = true;
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+      return conn;
+    } catch (error) {
+      isConnected = false;
+      connectionPromise = null;
+      console.error(`MongoDB initial connection failed: ${error.message}`);
+      throw error;
+    }
+  })();
 
-    // Surface any post-connect errors to the unhandledRejection handler
-    mongoose.connection.on('error', (err) => {
-      console.error(`MongoDB connection error: ${err.message}`);
-    });
+  return connectionPromise;
+};
 
-    return conn;
-  } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    throw error; // Let server.js handle the startup failure
+/**
+ * Gracefully disconnect from MongoDB.
+ *
+ * @returns {Promise<void>}
+ */
+const disconnectDB = async () => {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+    isConnected = false;
+    connectionPromise = null;
+    console.log('MongoDB connection closed gracefully.');
   }
 };
 
 module.exports = connectDB;
+module.exports.connectDB = connectDB;
+module.exports.disconnectDB = disconnectDB;
+
 
