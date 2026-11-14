@@ -1,3 +1,9 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Load environment configuration from server/.env
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
 const mongoose = require('mongoose');
 const { ResearchSession } = require('../models/ResearchSession');
 const { ResearchTask } = require('../models/ResearchTask');
