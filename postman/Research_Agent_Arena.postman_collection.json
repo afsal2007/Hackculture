@@ -1,0 +1,921 @@
+{
+  "info": {
+    "_postman_id": "c89b9101-72f1-4db3-96b0-research-agent-arena",
+    "name": "Research Agent Arena - Backend APIs",
+    "description": "Comprehensive Postman test collection for the Research Agent Arena pre-meeting research and agent benchmarking platform.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. System & Health",
+      "item": [
+        {
+          "name": "Root Discovery Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Contains API status and endpoints\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"online\");",
+                  "    pm.expect(json.endpoints).to.be.an(\"object\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Health status is UP\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data.status).to.eql(\"UP\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Research Sessions",
+      "item": [
+        {
+          "name": "Create Research Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Q4 Stripe Partnership Strategy Meeting\",\n  \"description\": \"Pre-meeting research on Stripe's recent enterprise payment orchestration moves and executive discussion points.\",\n  \"targetSubject\": \"Stripe\",\n  \"meetingPurpose\": \"Enterprise Payment Gateway Partnership Exploration\",\n  \"targetDate\": \"2026-12-05T14:30:00Z\",\n  \"tags\": [\"fintech\", \"payments\", \"enterprise\"],\n  \"metadata\": {\n    \"organizer\": \"Arun\",\n    \"priority\": \"High\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Session created with 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data._id).to.be.a('string');",
+                  "    pm.environment.set(\"sessionId\", json.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Research Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions?page=1&limit=10&status=active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Sessions list retrieved with pagination meta\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    pm.expect(json.meta).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Session By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{{sessionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                "{{sessionId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Session fetched successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data._id).to.eql(pm.environment.get(\"sessionId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Session",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description: Deep dive into Stripe agentic payments protocol and enterprise pricing.\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{{sessionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                "{{sessionId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Session updated successfully\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Session History Timeline",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{{sessionId}}/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                "{{sessionId}}",
+                "history"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Timeline array retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.timeline).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Research Tasks & AI Arena Pipeline",
+      "item": [
+        {
+          "name": "Create Research Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"subjectName\": \"Stripe\",\n  \"subjectType\": \"company\",\n  \"meetingPurpose\": \"Enterprise Payment Gateway Partnership Exploration\",\n  \"targetDate\": \"2026-12-05T14:30:00Z\",\n  \"additionalContext\": \"Focus on AI agent payments, merchant acquiring fees, and Patrick Collison recent announcements.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Task created with 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "    pm.expect(json.data._id).to.be.a('string');",
+                  "    pm.environment.set(\"taskId\", json.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Research Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks?sessionId={{sessionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tasks list retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Task details fetched\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data._id).to.eql(pm.environment.get(\"taskId\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task Status (Researching)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"researching\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}",
+                "status"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status updated to researching\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.status).to.eql('researching');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 1: Save Tavily Web Research Data",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"Stripe recent enterprise partnerships AI agent payment infrastructure 2026\",\n  \"searchDepth\": \"advanced\",\n  \"results\": [\n    {\n      \"title\": \"Stripe Announces Agentic Commerce Suite for Autonomous AI\",\n      \"url\": \"https://stripe.com/newsroom/news/agentic-commerce\",\n      \"content\": \"Stripe introduced new developer tools enabling AI agents to hold credentials, make verified micro-payments, and negotiate vendor contracts automatically.\",\n      \"score\": 0.96,\n      \"publishedDate\": \"2026-09-14\"\n    },\n    {\n      \"title\": \"Stripe Enterprise Billing: How Global 2000 Are Scaling\",\n      \"url\": \"https://techcrunch.com/stripe-enterprise-billing\",\n      \"content\": \"Analysis of Stripe's rapid growth in high-value recurring contracts and enterprise multi-currency treasury solutions.\",\n      \"score\": 0.89,\n      \"publishedDate\": \"2026-10-02\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}/web-data",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}",
+                "web-data"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Tavily data stored and status moved to generating_briefs\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.tavilyData.results.length).to.be.above(0);",
+                  "    pm.expect(json.data.status).to.eql('generating_briefs');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 2A: Save Agent A Briefing (Gemini 1.5 Pro)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agentKey\": \"agentA\",\n  \"name\": \"Agent A (Gemini 1.5 Pro)\",\n  \"model\": \"gemini-1.5-pro\",\n  \"status\": \"completed\",\n  \"executionTimeMs\": 3120,\n  \"tokenUsage\": {\n    \"promptTokens\": 2450,\n    \"completionTokens\": 980,\n    \"totalTokens\": 3430\n  },\n  \"briefing\": {\n    \"summary\": \"Stripe is currently aggressively expanding into Agentic Commerce and enterprise multi-processor orchestration. A partnership discussion should emphasize developer agility, sovereign AI compliance, and low latency.\",\n    \"companyOverview\": \"Global financial infrastructure platform processing over $1T+ annually with renewed focus on AI agent transactions.\",\n    \"keyPersonnel\": [\n      \"Patrick Collison - CEO & Co-founder\",\n      \"John Collison - President & Co-founder\",\n      \"Will Gaybrick - President of Product\"\n    ],\n    \"recentDevelopments\": [\n      \"Rolled out autonomous agent payment SDKs\",\n      \"Expanded enterprise treasury network in Europe & APAC\",\n      \"Enhanced anti-fraud radar models using Gemini multimodal embeddings\"\n    ],\n    \"discussionPoints\": [\n      \"How our API can natively interface with Stripe Agentic Commerce\",\n      \"Co-marketing opportunities for enterprise cloud merchants\",\n      \"Fee split and tier-1 volume discounts\"\n    ],\n    \"risksAndChallenges\": [\n      \"Competing internal initiatives at Stripe\",\n      \"Complex regional regulatory compliance in EU\"\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}/agent-results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}",
+                "agent-results"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Agent A briefing saved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.agents.agentA.status).to.eql('completed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 2B: Save Agent B Briefing (Gemini 1.5 Flash)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agentKey\": \"agentB\",\n  \"name\": \"Agent B (Gemini 1.5 Flash)\",\n  \"model\": \"gemini-1.5-flash\",\n  \"status\": \"completed\",\n  \"executionTimeMs\": 1240,\n  \"tokenUsage\": {\n    \"promptTokens\": 2450,\n    \"completionTokens\": 620,\n    \"totalTokens\": 3070\n  },\n  \"briefing\": {\n    \"summary\": \"Stripe provides internet payment infrastructure. Key opportunities lie in recurring revenue products and automated AI payments.\",\n    \"companyOverview\": \"Leading payment service provider known for developer-friendly APIs.\",\n    \"keyPersonnel\": [\n      \"Patrick Collison - CEO\",\n      \"John Collison - President\"\n    ],\n    \"recentDevelopments\": [\n      \"Agentic payment protocols launched\",\n      \"Global volume milestones passed\"\n    ],\n    \"discussionPoints\": [\n      \"Platform integration timelines\",\n      \"Pricing structure\"\n    ],\n    \"risksAndChallenges\": [\n      \"Market saturation in US/EU\",\n      \"High interchange pressure\"\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}/agent-results",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}",
+                "agent-results"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Agent B briefing saved and status moved to evaluating\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.agents.agentB.status).to.eql('completed');",
+                  "    pm.expect(json.data.status).to.eql('evaluating');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 3: Save Arena Evaluation & Benchmark",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metrics\": {\n    \"agentA\": {\n      \"relevanceScore\": 9.5,\n      \"depthScore\": 9.2,\n      \"accuracyScore\": 9.4,\n      \"actionabilityScore\": 9.5,\n      \"clarityScore\": 9.0,\n      \"totalScore\": 46.6\n    },\n    \"agentB\": {\n      \"relevanceScore\": 8.0,\n      \"depthScore\": 7.2,\n      \"accuracyScore\": 8.5,\n      \"actionabilityScore\": 7.8,\n      \"clarityScore\": 8.5,\n      \"totalScore\": 40.0\n    }\n  },\n  \"winner\": \"agentA\",\n  \"benchmarkSummary\": \"Agent A provided substantially deeper strategic discussion points for enterprise negotiations, while Agent B had 60% lower latency.\",\n  \"strengthsA\": [\n    \"Detailed personnel roles and recent initiatives\",\n    \"Actionable strategic negotiation hooks\",\n    \"Nuanced regulatory risk analysis\"\n  ],\n  \"strengthsB\": [\n    \"High speed execution (1240ms vs 3120ms)\",\n    \"Concise bullet summaries\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}/evaluation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}",
+                "evaluation"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Evaluation saved and task marked completed\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.evaluation.winner).to.eql('agentA');",
+                  "    pm.expect(json.data.status).to.eql('completed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Step 4: Save Finalized Meeting Briefing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chosenAgent\": \"agentA\",\n  \"title\": \"Executive Meeting Briefing: Stripe Partnership\",\n  \"content\": \"# Executive Briefing: Stripe\\n\\n## Objective\\nExplore enterprise payment gateway integration with Stripe Agentic Commerce.\\n\\n## Key Talking Points\\n1. Interoperability with autonomous agent payments.\\n2. Tiered revenue sharing.\\n3. APAC enterprise co-selling.\\n\\n## Decision Makers\\n- Patrick Collison (CEO)\\n- Will Gaybrick (President of Product)\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{taskId}}/briefing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{taskId}}",
+                "briefing"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Final briefing saved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.finalBriefing.chosenAgent).to.eql('agentA');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. History & Audit Logs",
+      "item": [
+        {
+          "name": "List All History Entries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/history?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"History entries list retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.be.an('array');",
+                  "    if (json.data.length > 0) {",
+                  "        pm.environment.set(\"historyId\", json.data[0]._id);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Manual History Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"taskId\": \"{{taskId}}\",\n  \"action\": \"NOTE_ADDED\",\n  \"title\": \"Strategy Call Note\",\n  \"description\": \"Internal review concluded Agent A provided superior talking points for the pitch.\",\n  \"actor\": \"Arun\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "history"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Custom note recorded with 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get History Entry By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/history/{{historyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "history",
+                "{{historyId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Single history entry retrieved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Error & Validation Tests",
+      "item": [
+        {
+          "name": "Validation Error: Missing Required Task Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"additionalContext\": \"Missing sessionId, subjectName, and meetingPurpose\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Returns 422 Unprocessable Entity\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "    pm.expect(json.error.code).to.eql('VALIDATION_ERROR');",
+                  "    pm.expect(json.error.details).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validation Error: Invalid MongoDB ObjectId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/not-a-valid-id-123",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "not-a-valid-id-123"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Returns 422 with invalid ID message\", function () {",
+                  "    pm.response.to.have.status(422);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.success).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Route Not Found (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/nonexistent-route",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "nonexistent-route"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Returns 404 Route Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.error.code).to.eql('ROUTE_NOT_FOUND');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
